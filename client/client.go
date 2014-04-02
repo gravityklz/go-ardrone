@@ -200,28 +200,28 @@ func (client *Client) Yaw(duration time.Duration, speed float64) {
 }
 
 func (client *Client) Up(speed float64) {
-	client.Apply(State{Fly: client.state.Fly, Vertical: speed})
+	client.Apply(State{Fly: client.state.Fly, Pitch: client.state.Pitch, Yaw: client.state.Yaw, Roll: client.state.Roll, Vertical: speed})
 }
 func (client *Client) Down(speed float64) {
-	client.Apply(State{Fly: client.state.Fly, Vertical: -speed})
+	client.Apply(State{Fly: client.state.Fly, Pitch: client.state.Pitch, Yaw: client.state.Yaw, Roll: client.state.Roll, Vertical: -speed})
 }
 func (client *Client) Right(speed float64) {
-	client.Apply(State{Fly: client.state.Fly, Roll: speed})
+	client.Apply(State{Fly: client.state.Fly, Pitch: client.state.Pitch, Yaw: client.state.Yaw, Roll: speed, Vertical: client.state.Vertical})
 }
 func (client *Client) Left(speed float64) {
-	client.Apply(State{Fly: client.state.Fly, Roll: -speed})
+	client.Apply(State{Fly: client.state.Fly, Pitch: client.state.Pitch, Yaw: client.state.Yaw, Roll: -speed, Vertical: client.state.Vertical})
 }
 func (client *Client) Clockwise(speed float64) {
-	client.Apply(State{Fly: client.state.Fly, Yaw: speed})
+	client.Apply(State{Fly: client.state.Fly, Pitch: client.state.Pitch, Yaw: speed, Roll: client.state.Roll, Vertical: client.state.Vertical})
 }
 func (client *Client) Counterclockwise(speed float64) {
-	client.Apply(State{Fly: client.state.Fly, Yaw: -speed})
+	client.Apply(State{Fly: client.state.Fly, Pitch: client.state.Pitch, Yaw: -speed, Roll: client.state.Roll, Vertical: client.state.Vertical})
 }
 func (client *Client) Forward(speed float64) {
-	client.Apply(State{Fly: client.state.Fly, Pitch: speed})
+	client.Apply(State{Fly: client.state.Fly, Pitch: speed, Yaw: client.state.Yaw, Roll: client.state.Roll, Vertical: client.state.Vertical})
 }
 func (client *Client) Backward(speed float64) {
-	client.Apply(State{Fly: client.state.Fly, Pitch: -speed})
+	client.Apply(State{Fly: client.state.Fly, Pitch: -speed, Yaw: client.state.Yaw, Roll: client.state.Roll, Vertical: client.state.Vertical})
 }
 func (client *Client) Hover() {
 	client.Apply(State{Fly: client.state.Fly})
@@ -251,7 +251,7 @@ func (client *Client) sendLoop() {
 		message := client.commands.ReadMessage()
 		// @TODO: Handle Write() errors
 		client.controlConn.Write([]byte(message))
-		time.Sleep(30 * time.Millisecond)
+		time.Sleep(10 * time.Millisecond)
 	}
 }
 
