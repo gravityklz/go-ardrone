@@ -2,12 +2,13 @@ package ardrone
 
 import (
 	"fmt"
-	"github.com/hybridgroup/go-ardrone/client/commands"
-	"github.com/hybridgroup/go-ardrone/client/navdata"
 	"log"
 	"net"
 	"sync"
 	"time"
+
+	"github.com/hybridgroup/go-ardrone/client/commands"
+	"github.com/hybridgroup/go-ardrone/client/navdata"
 )
 
 type State struct {
@@ -84,14 +85,14 @@ func Connect(config Config) (*Client, error) {
 }
 
 func (client *Client) Connect() error {
-	navdataAddr := addr(client.Config.Ip, client.Config.NavdataPort)
-	navdataConn, err := navdata.Dial(navdataAddr)
-	if err != nil {
-		return err
-	}
+	//navdataAddr := addr(client.Config.Ip, client.Config.NavdataPort)
+	//navdataConn, err := navdata.Dial(navdataAddr)
+	//if err != nil {
+	//		return err
+	//	}
 
-	client.navdataConn = navdataConn
-	client.navdataConn.SetReadTimeout(client.Config.NavdataTimeout)
+	//client.navdataConn = navdataConn
+	//client.navdataConn.SetReadTimeout(client.Config.NavdataTimeout)
 
 	controlAddr := addr(client.Config.Ip, client.Config.AtPort)
 	controlConn, err := net.Dial("udp", controlAddr)
@@ -106,30 +107,30 @@ func (client *Client) Connect() error {
 	client.Navdata = make(chan *navdata.Navdata, 0)
 
 	go client.sendLoop()
-	go client.navdataLoop()
+	//go client.navdataLoop()
 
 	// disable emergency mode (if on) and request demo navdata from drone.
-	for {
-		data := <-client.Navdata
+	//for {
+	//data := <-client.Navdata
 
-		state := State{}
-		// Sets emergency state if we are in an emergency (which disables it)
-		state.Emergency = data.Header.State&navdata.STATE_EMERGENCY_LANDING != 0
+	//state := State{}
+	// Sets emergency state if we are in an emergency (which disables it)
+	//state.Emergency = data.Header.State&navdata.STATE_EMERGENCY_LANDING != 0
 
-		// Request demo navdata if we are not receiving it yet
-		if data.Demo == nil {
-			state.Config = []KeyVal{{Key: "general:navdata_demo", Value: "TRUE"}}
-		} else {
-			state.Config = []KeyVal{}
-		}
-
-		client.Apply(state)
-
-		// Once emergency is disabled and full navdata is being sent, we are done
-		if !state.Emergency && data.Demo != nil {
-			break
-		}
-	}
+	// Request demo navdata if we are not receiving it yet
+	//if data.Demo == nil {
+	//		state.Config = []KeyVal{{Key: "general:navdata_demo", Value: "TRUE"}}
+	//	} else {
+	//		state.Config = []KeyVal{}
+	//	}
+	//
+	//		client.Apply(state)
+	//
+	//		// Once emergency is disabled and full navdata is being sent, we are done
+	//		if !state.Emergency && data.Demo != nil {
+	//			break
+	//		}
+	//	}
 
 	return nil
 }
@@ -142,28 +143,28 @@ func (client *Client) Animate(id AnimationId, arg int) {
 
 // @TODO Implement error return value
 func (client *Client) Takeoff() bool {
-	for {
-		client.Apply(State{Fly: true})
-		select {
-		case data := <-client.Navdata:
-			if data.Demo.ControlState == navdata.CONTROL_HOVERING {
-				return true
-			}
-		}
-	}
+	//for {
+	client.Apply(State{Fly: true})
+	//select {
+	//case data := <-client.Navdata:
+	//		if data.Demo.ControlState == navdata.CONTROL_HOVERING {
+	return true
+	//		}
+	//	}
+	//}
 }
 
 // @TODO Implement error return value
 func (client *Client) Land() {
-	for {
-		client.Apply(State{Fly: false})
-		select {
-		case data := <-client.Navdata:
-			if data.Demo.ControlState == navdata.CONTROL_LANDED {
-				return
-			}
-		}
-	}
+	//for {
+	client.Apply(State{Fly: false})
+	//		select {
+	//		case data := <-client.Navdata:
+	//			if data.Demo.ControlState == navdata.CONTROL_LANDED {
+	//				return
+	//			}
+	//		}
+	//	}
 }
 
 // Apply sets the desired state of the drone. Internally this is turned into
