@@ -61,6 +61,8 @@ type Client struct {
 	state     State
 
 	Navdata chan *navdata.Navdata // @TODO: make read-only
+
+	disconnect chan bool
 }
 
 type Config struct {
@@ -80,10 +82,14 @@ func DefaultConfig() Config {
 }
 
 func Connect(config Config) (*Client, error) {
-	client := &Client{Config: config}
+	client := &Client{Config: config, disconnect: make(chan bool, 1)}
 	return client, client.Connect()
 }
 
+func (client *Client) Disconnect() {
+	client.controlConn.Close()
+	client.disconnect <- true
+}
 func (client *Client) Connect() error {
 	//navdataAddr := addr(client.Config.Ip, client.Config.NavdataPort)
 	//navdataConn, err := navdata.Dial(navdataAddr)
@@ -252,7 +258,12 @@ func (client *Client) sendLoop() {
 		message := client.commands.ReadMessage()
 		// @TODO: Handle Write() errors
 		client.controlConn.Write([]byte(message))
-		time.Sleep(10 * time.Millisecond)
+
+		select {
+		case <-client.disconnect:
+			break
+		case <-time.After(10 * time.Millisecond):
+		}
 	}
 }
 
