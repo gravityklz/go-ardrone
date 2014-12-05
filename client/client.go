@@ -86,9 +86,9 @@ func Connect(config Config) (*Client, error) {
 	return client, client.Connect()
 }
 
-func (client *Client) Disconnect() {
-	client.controlConn.Close()
+func (client *Client) Disconnect() error {
 	client.disconnect <- true
+	return client.controlConn.Close()
 }
 func (client *Client) Connect() error {
 	//navdataAddr := addr(client.Config.Ip, client.Config.NavdataPort)
